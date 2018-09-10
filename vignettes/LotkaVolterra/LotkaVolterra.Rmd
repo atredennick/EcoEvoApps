@@ -81,8 +81,8 @@ where $\alpha$ is the *absolute* effect of intraspecific competition, and is equ
 $$
 \frac{dN_i}{dt} = rN_{i} \left(1-\alpha_{ii} N_i \right)
 $$
-Notice how growth at any instantaneous point in time. Also notice that we added two *i* subscripts to $\alpha$, and it is probably becoming pretty obvious how we include the effect of another species.
-
+ Notice how we got to drop the *t* subscripts becuase we are now defining population growth at any instantaneous point in time. Also notice that we added two *i* subscripts to $\alpha$, and $\alpha_{ii}$ reads as the effect of species *i* on species *i*. By this point, is is probably becoming pretty obvious how we include the effect of another species. 
+ 
 To include the effect of another species, we assume that growth is further limited by a simple function of the number of the other species, $\alpha_{ij}N_j$, where $\alpha_{ij}$ reads as: "the effect of species *j* on species *i*". Putting it all together, we can write equations for a two-species community as: 
 
 $$
