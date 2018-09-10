@@ -12,13 +12,13 @@ library(shiny)
 # devtools::install_github("EcoEvoEducation/EcoEvoApps")
 ```
 ## Introduction
-In the logistic model of population growth we saw that resource limitation can be included in an abstract way by including a carrying capacity for a population. But, what if there are also other species competiting for the same resources? Depending on the strength of competition, competing species can reduce equilibrium population abundance below the carrying capacity. To jog your memory, here is the discrete-time version of logistic growth:
+In the logistic model of population growth we saw that resource limitation can be included in an abstract way by including a carrying capacity for a population. But, what if there are also other species competing for the same resources? Depending on the strength of competition, competing species can reduce equilibrium population abundance below the carrying capacity. To jog your memory, here is the discrete-time version of logistic growth:
 
 $$
 N_{t+1} = N_{t} + rN_{t}\left(1-\frac{N_{t}}{K}\right)
 $$
 
-where *r* is the intrinsic per capita growth rate, *N* is the population abundance, and *K* is the carrying capacity. The effect of $\left(\frac{N}{K}\right)$ is intraspecific competition (density-dependence) -- the closer *N* comes to *K*, the slower the population grows. However, *carrying capacity" is a notoriously difficult term to define and quantify. Peter Chesson (2000) describes a more intuitive way to think about population growth by assuming that "per capita growth rates are linear decreasing functions of the density" of the population (Figure 1A). When this is the case, population growth rate starts low when a species is at low abundance (low $N$, high $r$), increases to a maximum when a species reaches a moderate abundance (medium $N$, medium $r$), and then decreases as the population reaches a high density (high $N$, low $r$) (Figure 1B).
+where *r* is the intrinsic per capita growth rate, *N* is the population abundance, and *K* is the carrying capacity. The effect of $\left(\frac{N}{K}\right)$ is intraspecific competition (density-dependence) -- the closer *N* comes to *K*, the slower the population grows. However, *carrying capacity* is a notoriously difficult term to define and quantify. Peter Chesson (2000) describes a more intuitive way to think about population growth by assuming that "per capita growth rates are linear decreasing functions of the density" of the population (Figure 1A). When this is the case, population growth rate starts low when a species is at low abundance (low $N$, high $r$), increases to a maximum when a species reaches a moderate abundance (medium $N$, medium $r$), and then decreases as the population reaches a high density (high $N$, low $r$) (Figure 1B).
 
 <br>
 <br>
@@ -76,14 +76,14 @@ So, we can rewrite the logistic growth equation as:
 $$
 N_{t+1} = N_{t} + rN_{t} \left(1-\alpha N \right)
 $$
-where $\alpha$ is the *absolute* effect of intraspecific competition, and is equal to $1/K$. If $\alpha$ is really small, then intraspecific competition (density-dependence) is negligable. If $\alpha$ is very large, then intraspecific competition strongly limits population growth and size. The reason we go to all this trouble to rewrite the logistic growth equation is to make it easier to include the effects of other species on population growth. But first, let's make the equation a little more simple by writing it in terms of population growth $\left(\frac{dN}{dt} \right)$, rather than population size, and by adding subscripts to denote we are talking about species *i*:
+where $\alpha$ is the *absolute* effect of intraspecific competition, and is equal to $1/K$. If $\alpha$ is really small, then intraspecific competition (density-dependence) is negligible. If $\alpha$ is very large, then intraspecific competition strongly limits population growth and size. The reason we go to all this trouble to rewrite the logistic growth equation is to make it easier to include the effects of other species on population growth. But first, let's make the equation a little more simple by writing it in terms of population growth $\left(\frac{dN}{dt} \right)$, rather than population size, and by adding subscripts to denote we are talking about species *i*:
 
 $$
 \frac{dN_i}{dt} = rN_{i} \left(1-\alpha_{ii} N_i \right)
 $$
-Notice how we got to drop the *t* subscripts becuase we are now defining populationg growth at any instantaneous point in time. Also notice that we added two *i* subscripts to $\alpha$, and $\alpha_{ii}$ reads as the effect of species *i* on species *i*. By this point, is is probably becoming pretty obvious how we include the effect of another species.
+Notice how growth at any instantaneous point in time. Also notice that we added two *i* subscripts to $\alpha$, and it is probably becoming pretty obvious how we include the effect of another species.
 
-To include the effect of another species, we assume that growth is further limited by a simple function of the number of the other species, $\alpha_{ij}Nj$, where $\alpha_{ij}$ reads as: "the effect of species *j* on species *i*". Putting it all together, we can write equations for a two-species community as: 
+To include the effect of another species, we assume that growth is further limited by a simple function of the number of the other species, $\alpha_{ij}N_j$, where $\alpha_{ij}$ reads as: "the effect of species *j* on species *i*". Putting it all together, we can write equations for a two-species community as: 
 
 $$
 \begin{align}
@@ -91,7 +91,7 @@ $$
 \frac{dN_2}{dt} &= r_2 N_2 \left(1 - \alpha_{22} N_2 - \alpha_{21} N_1 \right)
 \end{align}
 $$
-where the new parameter $\alpha_{2,1}$ is the absolute interspecific competition coefficient describing the the effect of species 2 on species 1. Recall that the fundamental requirement for species coexistence is that each species must be able to increase from low density (i.e., when it is rare in the community), implying that *intraspecific* competition must be greater than *interspecific* competition. Put more simply, each species must limit individuals of its own species more than it limits individuals of other species. Because the $\alpha$s control intra and interspecific competition in the Lotka-Volterra model, we can state the criterion for coexistence mathematically as: 
+where the new parameter $\alpha_{21}$ is the absolute interspecific competition coefficient describing the effect of species 2 on species 1. Recall that the fundamental requirement for species coexistence is that each species must be able to increase from low density (i.e., when it is rare in the community), implying that *intraspecific* competition must be greater than *interspecific* competition. Put more simply, each species must limit individuals of its own species more than it limits individuals of other species. Because the $\alpha$'s control intra and interspecific competition in the Lotka-Volterra model, we can state the criterion for coexistence mathematically as: 
 
 $$
 \alpha_{jj} > \alpha_{ij}
