@@ -1,0 +1,193 @@
+---
+title: "Predator-Prey interactions"
+author: "Gaurav Kandlikar"
+output: html_document
+runtime: shiny
+---
+
+```{r, echo = F, warning = F, message = F}
+library(tidyverse)
+library(deSolve)
+# Define the theme used in other apps
+my_theme <- theme_bw()+
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.y = element_line(color="white"),
+        panel.background   = element_rect(fill = "#EFEFEF"),
+        axis.text          = element_text(size=14, color="grey35", family = "Arial Narrow"),
+        axis.title         = element_text(size=16, family = "Arial Narrow", face = "bold"),
+        panel.border       = element_blank(),
+        axis.line.x        = element_line(color="black"),
+        axis.line.y        = element_line(color="black"),
+        strip.background   = element_blank(),
+        strip.text         = element_text(size=14, color="grey35", family = "Arial Narrow"),
+        legend.title       = element_text(size=14, family = "Arial Narrow"),
+        legend.text        = element_text(size=14, color="grey35", family = "Arial Narrow"),
+        plot.title         = element_text(size=18, family = "Arial Narrow", face="bold"))
+
+
+```
+## Introduction
+
+In the Lotka Voterra Competition exercise, we saw that the dynamics of any given species can be influenced by those of other species that are competing with it for resources. In nature, population dynamics are also regulated by species on other trophic levels. For example, the dynamics of predator populations are influenced by how many prey individuals are in the community. The Lotka-Voterra Predator-prey equations are a pair of differential equations that describe the population dynamics of one species at one trophic as a function of the dynamics of species on the other trophic level. Although it is most communly discussed in a "predator-prey" context, the framework here can also be applied to plant-herbivore, parasites-host, or any other trophic interaction. 
+
+## Exponentially growing prey
+
+The simplest Lotka-Volterra predator-prey equation considers a prey species $N$ that grows exponentially at a rate $r$, and shrinks as it gets consumed by predators $P$, which attack the prey they encounter at a per-capita rate $a$:
+
+$$\frac{dN}{dt} = rN - aNP$$
+
+The population of the predator $P$ grows as it converts the prey it consumes into new predator individuals at the rate $b$, and shrinks due to a constant per-capita mortality rate $d$:
+
+$$\frac{dP}{dt} = baNP - dP$$
+
+Let's take a look at what this model implies. *When there are no predators in the community* (i.e. $P = 0$), the prey species $N$ grows due to simple exponential growth. 
+
+Conversely, *when there are no prey individuals in the community* (i.e. $N = 0$), the predator popultion has no way to grow and exponentially declines at a rate $d$.    
+The rate of growth of the predator population grows when prey are abundant; but on the other hand, when there are plenty of predators, the prey population suffers and cannot grow very much. We can get some intuition that this dynamic might lead to some sort of population cycling -- as prey population grows, so too does the predator popuplation, which in turn hurts the prey.
+
+As expected, cyclic population dynamics are common in predator-prey systems:
+
+```{r, echo = F, message = F, warning = F, fig.align='center'}
+library(deSolve)
+library(tidyverse)
+lvpp <- function(pp.time,pp.init,pp.params) {
+  with (as.list(c(pp.time,pp.init,pp.params)), {
+    
+    # Parameters
+    # r = intrinsic growth rate of prey
+    # a = predation efficiency
+    # b = conversion efficiency of prey into predator
+    # d = intrinsic dseath rate of predator
+    dNdt <- (r*N) - (a*N*P)
+    dPdt <- (b*a*N*P) - (d*P)
+    
+    # return the vectors as a list
+    return(list(c(dNdt,dPdt)))
+  })
+}
+pp.params <- c("r" = 0.5, "a" = 0.1, "d" = 0.6, "b" = 0.5)
+pp.time <- seq(from = 0, to = 35, by = 0.1)
+pp.init <- c("N" = 25, "P" = 10)
+pp.out <- ode(func=lvpp,y=pp.init,parms=pp.params,times=pp.time)
+pp.out <- pp.out %>% as.data.frame %>% gather(., which, population, -time)
+
+# No predators to begin with
+pp.init2 <- c("N" = 2, "P" = 0)
+pp.out2 <- ode(func=lvpp,y=pp.init2,parms=pp.params,times=pp.time)
+pp.out2 <- pp.out2 %>% as.data.frame %>% gather(., which, population, -time)
+
+# No prey to begin with
+pp.init3 <- c("N" = 0, "P" = 25)
+pp.out3 <- ode(func=lvpp,y=pp.init3,parms=pp.params,times=pp.time)
+pp.out3 <- pp.out3 %>% as.data.frame %>% gather(., which, population, -time)
+
+pp.out <- bind_rows(pp.out, pp.out2, pp.out3, .id = "init")
+
+ggplot(pp.out) + 
+  geom_line(aes(x = time, y = population, color = which), size = 1.5) + 
+  scale_color_manual(values = c("#D55E00", "#0072B2")) + 
+  facet_wrap(.~init, scales = "free_y") +
+  my_theme + 
+  # scale_y_continuous(limits = c(0, 30)) + 
+  labs(title = "Dynamics of a predator-prey system", 
+          subtitle = "Parameters were as follows: r = 1, a = 0.1, d = 0.6, b = 0.5") + 
+  theme_bw()
+```
+
+In the first plot above, the system begins with 25 prey individuals and 10 predators- cyclic dynamics ensue. In the middle panel, there are no predators in the beginning, so the prey population simply grows exponentially. In the third panel, there are no prey individuals in the system- so, the predator population shrinks exponentially to zero. 
+
+## Logistically growing prey
+
+In the previous model, prey experience *exponential* growth when predators are absent-- in other words, the predators are the only factor regulating the prey dynamics. Of course, this doesn't happen in nature-- even when predators are absent, a prey population will eventually level off at some carrying capacity.   
+
+We can modify the prey equation presented above to model such density-dependent growth simply by adding a carrying capacity in the same was as we did in the Logistic Growth exercise:  
+
+$$\frac{dN}{dt} = rN * \left(1-\frac{N}{K}\right) - aNP$$
+
+We keep the predator population dynamics the same as before:  
+$$\frac{dP}{dt} = baNP - dP$$
+
+Note that in this model, *when predators are absent from the community*, the prey species grows logistically to its carrying capacity rather than experiencing unbounded exponential growth. One possible outcome in this case is *stabilized* population cycles- in other words, the predator and prey populations can cycle up and down until they reach a joint equilibrium: 
+
+
+
+```{r, echo = F, message = F, warning = F, fig.align='center'}
+lvpp_2 <- function(pp.time,pp.init,pp.params) {
+  with (as.list(c(pp.time,pp.init,pp.params)), {
+    
+    # Parameters
+    # r = intrinsic growth rate of prey
+    # a = predation efficiency
+    # b = conversion efficiency of prey into predator
+    # d = intrinsic dseath rate of predator
+    dNdt <- (r*N)*(1-N/prey_K) - (a*N*P)
+    dPdt <- (b*a*N*P) - (d*P)
+    
+    # return the vectors as a list
+    return(list(c(dNdt,dPdt)))
+  })
+}
+pp.params <- c("r" = 0.5, "a" = 0.1, "d" = 0.6, "b" = 0.5, "prey_K" = 100)
+pp.time <- seq(from = 0, to = 30, by = 0.1)
+pp.init <- c("N" = 25, "P" = 10)
+pp.out <- ode(func=lvpp_2,y=pp.init,parms=pp.params,times=pp.time)
+pp.out <- pp.out %>% as.data.frame %>% gather(., which, population, -time)
+
+# No predators to begin with
+pp.init2 <- c("N" = 2, "P" = 0)
+pp.out2 <- ode(func=lvpp_2,y=pp.init2,parms=pp.params,times=pp.time)
+pp.out2 <- pp.out2 %>% as.data.frame %>% gather(., which, population, -time)
+
+# No prey to begin with
+pp.init3 <- c("N" = 0, "P" = 25)
+pp.out3 <- ode(func=lvpp_2,y=pp.init3,parms=pp.params,times=pp.time)
+pp.out3 <- pp.out3 %>% as.data.frame %>% gather(., which, population, -time)
+
+pp.out <- bind_rows(pp.out, pp.out2, pp.out3, .id = "init")
+
+ggplot(pp.out) + 
+  geom_line(aes(x = time, y = population, color = which), size = 1.5) + 
+  scale_color_manual(values = c("#D55E00", "#0072B2")) + 
+  facet_wrap(.~init, scales = "free_y") +
+  my_theme + 
+  # scale_y_continuous(limits = c(0, 30)) + 
+  labs(title = "Dynamics of a predator-prey system", 
+          subtitle = "Parameters were as follows: r = 1, a = 0.1, d = 0.6, b = 0.5, prey K = 100") + 
+  theme_bw()
+```
+
+Note that in the middle graph, the prey population grows logistically to its carrying capacity of 100 when no predators are present. If we run this system out longer, we see that the populations eventually stop cycling as they reach an equilibrium when both predator and prey are present in the system:
+
+```{r, echo = F}
+pp.time <- seq(from = 0, to = 200, by = 0.1)
+pp.init <- c("N" = 25, "P" = 10)
+pp.out <- ode(func=lvpp_2,y=pp.init,parms=pp.params,times=pp.time)
+pp.out <- pp.out %>% as.data.frame %>% gather(., which, population, -time)
+
+ggplot(pp.out) + 
+  geom_line(aes(x = time, y = population, color = which), size = 1.5) + 
+  scale_color_manual(values = c("#D55E00", "#0072B2")) + 
+  # facet_wrap(.~init, scales = "free_y") +
+  my_theme + 
+  # scale_y_continuous(limits = c(0, 30)) + 
+  labs(title = "Dynamics of a predator-prey system", 
+          subtitle = "Parameters were as follows: r = 1, a = 0.1, d = 0.6, b = 0.5, prey K = 100") + 
+  theme_bw()
+```
+
+
+## Interactive app
+
+Now, it's your turn to explore the dynamics of the Lotka-Volterra predator-prey model!
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+shinyAppDir(
+  system.file("examples/LV-predprey", package="EcoEvoApps"),
+  options=list(
+    width="100%", height=550
+  )
+)
+```

@@ -15,17 +15,17 @@ library(rmarkdown)
 ```
 
 ### Introduction
-In the last lesson on exponential population growth, we examined population growth without bound. Obviously this almost never occurs in nature, a lack of resources often limits population success. 
+In the last lesson on exponential population growth, we examined population growth without bound. Obviously this almost never occurs in nature: a lack of resources often limits population success. 
 
-To model these cases realistically, we can use a model of logistic growth. As before, we start with the idea that in any population, the number of individuals at any particular time is governed by the initial population size, $N_0$, and the number of births, deaths, immigrations, and emigarations that occur.
+To model these cases more realistically, we can use a model of logistic growth. As before, we start with the idea that in any population, the number of individuals at any particular time is governed by the initial population size, $N_0$, and the number of births, deaths, immigrations, and emigarations that occur.
 
 In this disctrete-time model, resources are limited, and thus the population may not grow beyond its **carrying capacity**.
 
-The population size in each timestep is a function of the population size at the time before ($N_t$), the population growth rate ($r$), and the carrying capacity ($K$) as shown in the equation below.
+The population size in each timestep is a function of the population size at the previous timestep ($N_t$), the population growth rate ($r$), and the carrying capacity ($K$) as shown in the equation below.
 
 $$N_{t+1}=N_t+r*N_t*\frac{K-N_t}{K}$$
 
-To program these dynamics, we start by considering a population with an initial population size of 50, a population growth rate, $r=1.3$, and limit the population to a carrying capacity of 500.
+To program these dynamics, we start by considering a population with an initial population size of 50, a population growth rate, $r=1.3$, and a carrying capacity of 500.
 
 ```{r, echo=FALSE}
 inputPanel(
@@ -55,11 +55,11 @@ renderPlot({
 })
 ```
 
-Notice that when the population growth rate $r$ gets large, the dynamics of the system become increasingly irregular. 
+Notice that when the population growth rate $r$ is large, the dynamics of the system become increasingly irregular. 
 
-It turns out that discrete time versions of models that try to capture the effects of carrying capacities have funny properties that make them sensitive to initial population size and growth rate. This os often referred to as *deterministic chaos*.
+It turns out that discrete time versions of models that try to capture the effects of carrying capacities have funny properties that make them sensitive to initial population size and growth rate. This is often referred to as *deterministic chaos*.
 
-Below, Compare two species when they have the same carrying capacity ($K=500$) and only slightly different initial conditions or growth rates.
+Below, compare two species when they have the same carrying capacity ($K=500$) and only slightly different initial conditions or growth rates.
 
 ```{r, echo=FALSE}
 inputPanel(
